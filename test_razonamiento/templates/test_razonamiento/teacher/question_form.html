@@ -1,0 +1,77 @@
+{% extends 'test_razonamiento/base.html' %}
+{% block title %}{% if form.instance.pk %}Editar Pregunta{% else %}Nueva Pregunta{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0">{% if form.instance.pk %}Editar Pregunta #{{ form.instance.pk }}{% else %}Crear Nueva Pregunta{% endif %}</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">{{ form.title.label }}</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">{{ form.correct_option.label }} (1-6)</label>
+                            {{ form.correct_option }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label">{{ form.is_active.label }}</label>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5 class="mb-3">Imágenes</h5>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Imagen Estímulo (Secuencia Principal)</label>
+                            {{ form.stimulus_image }}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Opción 1</label>
+                            {{ form.option_1_image }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Opción 2</label>
+                            {{ form.option_2_image }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Opción 3</label>
+                            {{ form.option_3_image }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Opción 4</label>
+                            {{ form.option_4_image }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Opción 5</label>
+                            {{ form.option_5_image }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Opción 6</label>
+                            {{ form.option_6_image }}
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-3 border-top text-end">
+                        <a href="{% url 'test_razonamiento:question_list' %}" class="btn btn-light me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-5">Guardar Pregunta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

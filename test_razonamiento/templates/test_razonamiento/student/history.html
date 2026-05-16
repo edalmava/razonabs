@@ -1,0 +1,38 @@
+{% extends 'test_razonamiento/base.html' %}
+{% block title %}Mi Historial de Tests{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Mi Historial de Resultados</h1>
+    <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-outline-primary">Ver Tests Disponibles</a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for attempt in attempts %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-top border-4 {% if attempt.score_percentage >= 70 %}border-success{% elif attempt.score_percentage >= 40 %}border-warning{% else %}border-danger{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">{{ attempt.test.name }}</h5>
+                    <span class="badge {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                        {{ attempt.score_percentage|floatformat:0 }}%
+                    </span>
+                </div>
+                
+                <p class="text-muted mb-1 small"><i class="bi bi-calendar-check"></i> Finalizado el {{ attempt.end_date|date:"d M Y, H:i" }}</p>
+                <p class="mb-3"><strong>Resultado:</strong> {{ attempt.score }} / {{ attempt.test.num_questions }} aciertos</p>
+                
+                <div class="d-grid">
+                    <a href="{% url 'test_razonamiento:test_results' attempt.id %}" class="btn btn-sm btn-outline-primary">Ver Detalle del Resultado</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <p class="lead text-muted">Aún no has completado ningún test.</p>
+        <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-primary">Comenzar un Test ahora</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

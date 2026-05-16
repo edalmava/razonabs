@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Test de Razonamiento Abstracto{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-option { 
+            width: 100%; 
+            margin-bottom: 10px; 
+            padding: 15px; 
+            text-align: center;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-option:hover { background-color: #e9ecef; border-color: #adb5bd; }
+        .btn-option input { display: none; }
+        .btn-option.selected { border-color: #0d6efd; background-color: #e7f1ff; }
+        .stimulus-img { max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #ddd; }
+        .option-img { max-width: 100%; height: 100px; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'test_razonamiento:test_list' %}">Test Abstracto</a>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    {% if user.role == 'teacher' or user.is_superuser %}
+                    <a href="{% url 'test_razonamiento:teacher_dashboard' %}" class="btn btn-outline-light btn-sm me-3">Panel Docente</a>
+                    {% else %}
+                    <a href="{% url 'test_razonamiento:student_history' %}" class="btn btn-outline-light btn-sm me-3">Mis Resultados</a>
+                    {% endif %}
+                    <span class="navbar-text text-white me-3">
+                        Hola, {{ user.username }}
+                    </span>
+                    <a href="{% url 'test_razonamiento:logout' %}" class="btn btn-sm btn-danger">Salir</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

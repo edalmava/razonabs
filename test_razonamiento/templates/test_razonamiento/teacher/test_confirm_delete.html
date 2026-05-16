@@ -1,0 +1,20 @@
+{% extends 'test_razonamiento/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h3 class="text-danger mb-4">¿Eliminar Test?</h3>
+                <p>Estás a punto de eliminar el test <strong>"{{ object.name }}"</strong>. Esta acción eliminará también todos los intentos y resultados de los estudiantes asociados a este test.</p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg px-4 me-2">Sí, Eliminar Test</button>
+                    <a href="{% url 'test_razonamiento:teacher_dashboard' %}" class="btn btn-light btn-lg px-4">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'test_razonamiento/base.html' %}
+{% block title %}Editar Test: {{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0">Configuración del Test: <strong>{{ object.name }}</strong></h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nombre del Test</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Tiempo (seg/preg)</label>
+                            {{ form.seconds_per_question }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">N° Preguntas (N)</label>
+                            {{ form.num_questions }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Descripción / Instrucciones</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label fw-bold">Test Activo (Visible para estudiantes)</label>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5 class="mb-3">Seleccionar Preguntas del Banco</h5>
+                    <p class="text-muted small">Marque las preguntas que desea incluir en este test. El sistema seleccionará {{ object.num_questions }} de forma aleatoria de este conjunto.</p>
+                    
+                    <div class="row row-cols-1 row-cols-md-2 g-3 border rounded p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+                        {% for choice in form.questions %}
+                            <div class="col">
+                                <div class="form-check card p-2 h-100">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label ms-2 d-flex align-items-center" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-5 pt-3 border-top text-end">
+                        <a href="{% url 'test_razonamiento:teacher_dashboard' %}" class="btn btn-light me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-5">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

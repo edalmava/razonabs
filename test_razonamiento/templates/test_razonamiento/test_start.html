@@ -1,0 +1,27 @@
+{% extends 'test_razonamiento/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h2>{{ test.name }}</h2>
+            <hr>
+            <h5>Instrucciones:</h5>
+            <div class="my-3">
+                {{ test.description|linebreaks }}
+            </div>
+            <ul>
+                <li>Número de preguntas: <strong>{{ test.num_questions }}</strong></li>
+                <li>Tiempo por pregunta: <strong>{{ test.seconds_per_question }} segundos</strong></li>
+                <li>El sistema avanzará automáticamente al agotarse el tiempo.</li>
+            </ul>
+            
+            <form method="post" class="text-center mt-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-lg">
+                    {% if attempt %}Continuar Intento{% else %}Comenzar Test{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

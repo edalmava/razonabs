@@ -1,0 +1,79 @@
+{% extends 'test_razonamiento/base.html' %}
+{% load custom_filters %}
+{% block title %}Detalle del Intento: {{ attempt.student.username }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:teacher_dashboard' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:test_results_report' attempt.test.pk %}">Resultados: {{ attempt.test.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Detalle: {{ attempt.student.username }}</li>
+  </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase small fw-bold">Puntaje Final</h6>
+                <div class="display-4 fw-bold text-primary">{{ correct_count }} / {{ total_questions }}</div>
+                <div class="h5 text-muted">{{ score_pct|floatformat:1 }}% de aciertos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase small fw-bold">Tiempo Total</h6>
+                <div class="display-4 fw-bold">
+                    {% with total_time=responses|sum_time %}
+                    {{ total_time }}s
+                    {% endwith %}
+                </div>
+                <div class="h5 text-muted">Promedio: {% with total_time=responses|sum_time %}{{ total_time|divide:total_questions|floatformat:1 }}{% endwith %}s / preg.</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase small fw-bold">Información Estudiante</h6>
+                <div class="h4 mt-3 fw-bold">{{ attempt.student.username }}</div>
+                <div class="text-muted small">Realizado el {{ attempt.end_date|date:"d M Y, H:i" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Desglose de Preguntas</h4>
+<div class="row row-cols-1 row-cols-lg-2 g-4">
+    {% for resp in responses %}
+    <div class="col">
+        <div class="card shadow-sm h-100 {% if resp.is_correct %}border-success{% else %}border-danger{% endif %} border-start border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="badge bg-secondary">Pregunta #{{ forloop.counter }}</span>
+                    <span class="badge {% if resp.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if resp.is_correct %}Correcta{% else %}Incorrecta{% endif %}
+                    </span>
+                </div>
+                
+                <div class="row align-items-center">
+                    <div class="col-4">
+                        <img src="{{ resp.question.stimulus_image.url }}" class="img-fluid rounded border" alt="Estímulo">
+                    </div>
+                    <div class="col-8">
+                        <p class="mb-1"><strong>Opción elegida:</strong> {{ resp.selected_option|default:"Sin respuesta" }}</p>
+                        <p class="mb-1"><strong>Opción correcta:</strong> {{ resp.question.correct_option }}</p>
+                        <p class="mb-0 text-muted">
+                            <i class="bi bi-clock"></i> Tiempo: <strong>{{ resp.time_taken }}s</strong> 
+                            <small>(límite: {{ attempt.test.seconds_per_question }}s)</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
