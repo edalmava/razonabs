@@ -1,0 +1,59 @@
+{% extends 'test_razonamiento/base.html' %}
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Estudiante{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0">{% if object %}Editar{% else %}Agregar{% endif %} Estudiante</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ form.username.label }}</label>
+                            {{ form.username }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ form.password.label }}</label>
+                            {{ form.password }}
+                            {% if object %}<small class="text-muted d-block">Dejar en blanco para mantener la actual</small>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ form.first_name.label }}</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ form.last_name.label }}</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ form.email.label }}</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label fw-bold">Estudiante Activo</label>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-3 border-top text-end">
+                        <a href="{% url 'test_razonamiento:student_list' %}" class="btn btn-light me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-5">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

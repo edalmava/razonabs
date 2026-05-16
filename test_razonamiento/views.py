@@ -7,9 +7,10 @@ from django.utils import timezone
 from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, FormView
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.db import models
 from django.urls import reverse_lazy
 from .models import Test, TestAttempt, Question, AttemptQuestion, StudentResponse, CustomUser
-from .forms import TestForm, CustomLoginForm, QuestionForm, StudentImportForm
+from .forms import TestForm, CustomLoginForm, QuestionForm, StudentImportForm, StudentForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
 
@@ -57,7 +58,15 @@ def logout_view(request):
 def test_list(request):
     check_and_expire_attempts(request.user)
     tests = Test.objects.filter(is_active=True)
-    return render(request, 'test_razonamiento/test_list.html', {'tests': tests})
+    test_data = []
+    for test in tests:
+        test_data.append({
+            'test': test,
+            'user_attempts_count': test.get_user_attempts_count(request.user),
+            'has_active_attempt': test.has_active_attempt(request.user),
+            'can_start_new': test.can_start_new(request.user)
+        })
+    return render(request, 'test_razonamiento/test_list.html', {'test_data': test_data, 'user': request.user})
 
 @login_required
 def test_start(request, test_id):
@@ -349,5 +358,55 @@ class StudentImportView(TeacherRequiredMixin, FormView):
                     
         except Exception as e:
             messages.error(self.request, f"Error crítico al procesar el archivo: {str(e)}")
-            
+
         return super().form_valid(form)
+
+# Gestión de Estudiantes
+class StudentListView(TeacherRequiredMixin, ListView):
+    model = CustomUser
+    template_name = 'test_razonamiento/teacher/student_list.html'
+    context_object_name = 'students'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = CustomUser.objects.filter(role=CustomUser.Role.STUDENT).order_by('-created_at')
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(username__icontains=search) |
+                models.Q(first_name__icontains=search) |
+                models.Q(last_name__icontains=search)
+            )
+        return queryset
+
+class StudentCreateView(TeacherRequiredMixin, CreateView):
+    model = CustomUser
+    form_class = StudentForm
+    template_name = 'test_razonamiento/teacher/student_form.html'
+    success_url = reverse_lazy('test_razonamiento:student_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Estudiante creado exitosamente.")
+        return super().form_valid(form)
+
+class StudentUpdateView(TeacherRequiredMixin, UpdateView):
+    model = CustomUser
+    form_class = StudentForm
+    template_name = 'test_razonamiento/teacher/student_form.html'
+    success_url = reverse_lazy('test_razonamiento:student_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Estudiante actualizado correctamente.")
+        return super().form_valid(form)
+
+class StudentDeleteView(TeacherRequiredMixin, DeleteView):
+    model = CustomUser
+    template_name = 'test_razonamiento/teacher/student_confirm_delete.html'
+    success_url = reverse_lazy('test_razonamiento:student_list')
+
+    def get_queryset(self):
+        return CustomUser.objects.filter(role=CustomUser.Role.STUDENT)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Estudiante eliminado correctamente.")
+        return super().delete(request, *args, **kwargs)

@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from .models import Test, Question
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from .models import Test, Question, CustomUser
 
 class CustomLoginForm(AuthenticationForm):
     username = forms.CharField(
@@ -43,3 +43,31 @@ class QuestionForm(forms.ModelForm):
 
 class StudentImportForm(forms.Form):
     csv_file = forms.FileField(label="Seleccionar archivo CSV", widget=forms.FileInput(attrs={'class': 'form-control'}))
+
+class StudentForm(forms.ModelForm):
+    password = forms.CharField(
+        label="Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
+        required=False,
+        help_text="Dejar en blanco para mantener la actual"
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'first_name', 'last_name', 'email', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código de estudiante'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombres'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellidos'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'correo@ejemplo.com'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = CustomUser.Role.STUDENT
+        if self.cleaned_data.get('password'):
+            user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user

@@ -2,27 +2,27 @@
 {% block content %}
 <h2>Tests Disponibles</h2>
 <div class="row mt-4">
-    {% for test in tests %}
+    {% for item in test_data %}
     <div class="col-md-4">
         <div class="card p-3 h-100 shadow-sm">
             <div class="d-flex justify-content-between">
-                <h3>{{ test.name }}</h3>
-                {% if not test.can_start_new and not test.has_active_attempt %}
+                <h3>{{ item.test.name }}</h3>
+                {% if not item.can_start_new and not item.has_active_attempt %}
                     <span class="badge bg-danger align-self-start">Límite alcanzado</span>
                 {% endif %}
             </div>
-            <p class="text-muted small mb-2">{{ test.num_questions }} preguntas | {{ test.seconds_per_question }}s por preg.</p>
-            
+            <p class="text-muted small mb-2">{{ item.test.num_questions }} preguntas | {{ item.test.seconds_per_question }}s por preg.</p>
+
             <div class="mb-3">
                 <span class="badge bg-light text-dark border">
-                    Intentos: {{ test.user_attempts_count }} / {{ test.max_attempts }}
+                    Intentos: {{ item.user_attempts_count }} / {{ item.test.max_attempts }}
                 </span>
             </div>
 
-            {% if test.has_active_attempt %}
-                <a href="{% url 'test_razonamiento:test_start' test.id %}" class="btn btn-warning w-100">Continuar Test</a>
-            {% elif test.can_start_new %}
-                <a href="{% url 'test_razonamiento:test_start' test.id %}" class="btn btn-primary w-100">Comenzar</a>
+            {% if item.has_active_attempt %}
+                <a href="{% url 'test_razonamiento:test_start' item.test.id %}" class="btn btn-warning w-100">Continuar Test</a>
+            {% elif item.can_start_new %}
+                <a href="{% url 'test_razonamiento:test_start' item.test.id %}" class="btn btn-primary w-100">Comenzar</a>
             {% else %}
                 <button class="btn btn-secondary w-100" disabled>No quedan intentos</button>
             {% endif %}

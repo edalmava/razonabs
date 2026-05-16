@@ -93,3 +93,5 @@ dmypy.json
 # IDE/other project configs
 .spyproject
 .ropeproject
+
+*.csv

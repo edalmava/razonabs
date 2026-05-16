@@ -31,6 +31,10 @@ urlpatterns = [
     path('teacher/questions/<int:pk>/edit/', views.QuestionUpdateView.as_view(), name='question_update'),
     path('teacher/questions/<int:pk>/delete/', views.QuestionDeleteView.as_view(), name='question_delete'),
     
-    # Importación Estudiantes
+    # Gestión Estudiantes
+    path('teacher/students/', views.StudentListView.as_view(), name='student_list'),
+    path('teacher/students/add/', views.StudentCreateView.as_view(), name='student_create'),
+    path('teacher/students/<int:pk>/edit/', views.StudentUpdateView.as_view(), name='student_update'),
+    path('teacher/students/<int:pk>/delete/', views.StudentDeleteView.as_view(), name='student_delete'),
     path('teacher/students/import/', views.StudentImportView.as_view(), name='student_import'),
 ]

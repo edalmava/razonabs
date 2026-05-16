@@ -121,6 +121,27 @@ class Test(TimeStampedModel):
     def __str__(self) -> str:
         return self.name
 
+    def get_user_attempts_count(self, user):
+        """Cantidad de intentos finalizados del usuario."""
+        if not user or not user.is_authenticated:
+            return 0
+        return self.attempts.filter(student=user, status=TestAttempt.Status.FINISHED).count()
+
+    def has_active_attempt(self, user):
+        """Indica si el usuario tiene un intento en curso."""
+        if not user or not user.is_authenticated:
+            return False
+        return self.attempts.filter(student=user, status=TestAttempt.Status.IN_PROGRESS).exists()
+
+    def can_start_new(self, user):
+        """Indica si el usuario puede iniciar un nuevo intento."""
+        if not user or not user.is_authenticated:
+            return False
+        if self.has_active_attempt(user):
+            return True
+        finished = self.get_user_attempts_count(user)
+        return finished < self.max_attempts
+
 # ---------------------------------------------------------------------------
 # 4. INTENTO (SESIÓN)
 # ---------------------------------------------------------------------------

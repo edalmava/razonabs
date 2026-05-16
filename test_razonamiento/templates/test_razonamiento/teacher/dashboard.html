@@ -5,6 +5,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Panel de Control del Docente</h1>
     <div>
+        <a href="{% url 'test_razonamiento:student_list' %}" class="btn btn-outline-primary me-2">Gestionar Estudiantes</a>
         <a href="{% url 'test_razonamiento:question_list' %}" class="btn btn-outline-primary me-2">Gestionar Banco de Preguntas</a>
         <a href="{% url 'test_razonamiento:student_import' %}" class="btn btn-outline-secondary me-2">Importar Estudiantes (CSV)</a>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTestModal">
@@ -94,6 +95,10 @@
                         <div class="col">
                             <label class="form-label">{{ form.num_questions.label }}</label>
                             {{ form.num_questions }}
+                        </div>
+                        <div class="col">
+                            <label class="form-label">{{ form.max_attempts.label }}</label>
+                            {{ form.max_attempts }}
                         </div>
                     </div>
                     <div class="form-check">
