@@ -10,13 +10,12 @@
 
         <div class="card p-4 mb-4">
             <div class="text-center mb-4">
-                <img src="{{ question.stimulus_image.url }}" class="stimulus-img" alt="Estímulo">
+                <img src="{% url 'test_razonamiento:serve_question_image' attempt.id question.id 'stimulus' %}" class="stimulus-img" alt="Estímulo">
             </div>
 
             <form id="test-form" method="post">
                 {% csrf_token %}
-                <input type="hidden" name="time_taken" id="time_taken" value="0">
-                
+
                 <div class="row row-cols-2 row-cols-md-3 g-3">
                     {% for i in "123456" %}
                         {% with opt_img_attr="option_"|add:i|add:"_image" %}
@@ -25,7 +24,7 @@
                             <label class="btn-option h-100 d-flex flex-column align-items-center justify-content-center" id="label-{{ i }}">
                                 <input type="radio" name="option" value="{{ i }}" onchange="selectOption('{{ i }}')">
                                 {% if opt_img %}
-                                    <img src="{{ opt_img.url }}" class="option-img" alt="Opción {{ i }}">
+                                    <img src="{% url 'test_razonamiento:serve_question_image' attempt.id question.id 'option_'|add:i %}" class="option-img" alt="Opción {{ i }}">
                                 {% else %}
                                     <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border shadow-sm mb-2" style="width: 80px; height: 80px;">
                                         <span class="h2 mb-0 text-primary">{{ i }}</span>
@@ -49,24 +48,19 @@
 
 <script>
     let timeLeft = {{ seconds }};
-    let timeTaken = 0;
     const timerElement = document.getElementById('timer');
-    const timeTakenInput = document.getElementById('time_taken');
     const form = document.getElementById('test-form');
 
     function updateTimer() {
         let mins = Math.floor(timeLeft / 60);
         let secs = timeLeft % 60;
         timerElement.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        
+
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            timeTakenInput.value = {{ seconds }};
             form.submit();
         }
         timeLeft--;
-        timeTaken++;
-        timeTakenInput.value = timeTaken;
     }
 
     const timerInterval = setInterval(updateTimer, 1000);

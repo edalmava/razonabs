@@ -14,6 +14,7 @@ urlpatterns = [
     path('tests/<int:test_id>/start/', views.test_start, name='test_start'),
     path('tests/attempt/<int:attempt_id>/question/', views.render_question, name='render_question'),
     path('tests/attempt/<int:attempt_id>/results/', views.test_results, name='test_results'),
+    path('tests/attempt/<int:attempt_id>/image/<int:question_id>/<str:image_type>/', views.serve_question_image, name='serve_question_image'),
     path('my-results/', views.StudentHistoryView.as_view(), name='student_history'),
 
     # Rutas Docente

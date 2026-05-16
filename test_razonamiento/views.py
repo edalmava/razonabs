@@ -1,6 +1,7 @@
 import random
 import csv
 import io
+import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -9,6 +10,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.db import models
 from django.urls import reverse_lazy
+from django.http import FileResponse, HttpResponseForbidden, Http404
 from .models import Test, TestAttempt, Question, AttemptQuestion, StudentResponse, CustomUser
 from .forms import TestForm, CustomLoginForm, QuestionForm, StudentImportForm, StudentForm
 from django.contrib.auth.views import LoginView
@@ -106,7 +108,7 @@ def render_question(request, attempt_id):
     attempt_questions = attempt.test_questions.all().select_related('question')
     responded_question_ids = StudentResponse.objects.filter(attempt=attempt).values_list('question_id', flat=True)
     current_attempt_question = attempt_questions.exclude(question_id__in=responded_question_ids).first()
-    
+
     if not current_attempt_question:
         attempt.status = TestAttempt.Status.FINISHED
         attempt.end_date = timezone.now()
@@ -117,19 +119,27 @@ def render_question(request, attempt_id):
     if request.method == "POST":
         selected_option_raw = request.POST.get('option')
         selected_option = int(selected_option_raw) if selected_option_raw else None
-        
-        time_taken_client = int(request.POST.get('time_taken', 0))
+
+        if current_attempt_question.started_at:
+            time_taken = int((timezone.now() - current_attempt_question.started_at).total_seconds())
+        else:
+            time_taken = int(request.POST.get('time_taken', 0))
+
         limit = attempt.test.seconds_per_question + 2
-        if time_taken_client > limit:
+        if time_taken > limit or time_taken > attempt.test.seconds_per_question:
             selected_option = None
-        
+            time_taken = attempt.test.seconds_per_question
+
         StudentResponse.objects.create(
             attempt=attempt,
             question=question,
             selected_option=selected_option,
-            time_taken=min(time_taken_client, attempt.test.seconds_per_question)
+            time_taken=min(time_taken, attempt.test.seconds_per_question)
         )
         return redirect('test_razonamiento:render_question', attempt_id=attempt.id)
+
+    current_attempt_question.started_at = timezone.now()
+    current_attempt_question.save(update_fields=['started_at'])
 
     context = {
         'attempt': attempt,
@@ -139,6 +149,38 @@ def render_question(request, attempt_id):
         'seconds': attempt.test.seconds_per_question
     }
     return render(request, 'test_razonamiento/question.html', context)
+
+@login_required
+def serve_question_image(request, attempt_id, question_id, image_type):
+    """Sirve imágenes de preguntas solo si el estudiante tiene un intento activo."""
+    attempt = get_object_or_404(
+        TestAttempt,
+        id=attempt_id,
+        student=request.user,
+        status=TestAttempt.Status.IN_PROGRESS
+    )
+
+    if not attempt.test_questions.filter(question_id=question_id).exists():
+        return HttpResponseForbidden("Pregunta no válida para este intento.")
+
+    if image_type == 'stimulus':
+        field_name = 'stimulus_image'
+    elif image_type.startswith('option_'):
+        field_name = f'{image_type}_image'
+    else:
+        return HttpResponseForbidden("Tipo de imagen no válido.")
+
+    question = get_object_or_404(Question, id=question_id)
+    image_file = getattr(question, field_name, None)
+
+    if not image_file or not image_file.name:
+        raise Http404("Imagen no encontrada.")
+
+    file_path = image_file.path
+    if not os.path.exists(file_path):
+        raise Http404("Archivo no encontrado.")
+
+    return FileResponse(open(file_path, 'rb'), content_type='image/jpeg')
 
 @login_required
 def test_results(request, attempt_id):

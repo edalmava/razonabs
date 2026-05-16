@@ -180,6 +180,7 @@ class AttemptQuestion(models.Model):
     attempt = models.ForeignKey(TestAttempt, on_delete=models.CASCADE, related_name="test_questions")
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(_("orden"))
+    started_at = models.DateTimeField(_("inicio de pregunta"), null=True, blank=True)
 
     class Meta:
         ordering = ["order"]
