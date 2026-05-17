@@ -2,67 +2,84 @@
 {% block title %}Dashboard Docente{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Panel de Control del Docente</h1>
-    <div>
-        <a href="{% url 'test_razonamiento:student_list' %}" class="btn btn-outline-primary me-2">Gestionar Estudiantes</a>
-        <a href="{% url 'test_razonamiento:question_list' %}" class="btn btn-outline-primary me-2">Gestionar Banco de Preguntas</a>
-        <a href="{% url 'test_razonamiento:student_import' %}" class="btn btn-outline-secondary me-2">Importar Estudiantes (CSV)</a>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTestModal">
-            + Crear Nuevo Test
-        </button>
+<div class="fade-in">
+    <div class="teacher-header">
+        <h1 class="page-title mb-0">
+            <i class="bi bi-speedometer2 me-2 text-primary"></i>Panel de Control
+        </h1>
+        <div class="teacher-actions">
+            <a href="{% url 'test_razonamiento:student_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-people me-1"></i>Gestionar Estudiantes
+            </a>
+            <a href="{% url 'test_razonamiento:question_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-stack me-1"></i>Gestionar Preguntas
+            </a>
+            <a href="{% url 'test_razonamiento:student_import' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-upload me-1"></i>Importar (CSV)
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTestModal">
+                <i class="bi bi-plus-lg me-1"></i>Crear Nuevo Test
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Mis Tests Configurados</h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Tiempo/Preg.</th>
-                            <th>N° Preguntas</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for test in tests %}
-                        <tr>
-                            <td><strong>{{ test.name }}</strong></td>
-                            <td>{{ test.seconds_per_question }}s</td>
-                            <td>{{ test.num_questions }}</td>
-                            <td>
-                                {% if test.is_active %}
-                                <span class="badge bg-success">Activo</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Inactivo</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="{% url 'test_razonamiento:test_update' test.pk %}" class="btn btn-sm btn-outline-primary me-1">
-                                    Configurar/Asignar
-                                </a>
-                                <a href="{% url 'test_razonamiento:test_results_report' test.pk %}" class="btn btn-sm btn-outline-info me-1">
-                                    Ver Resultados
-                                </a>
-                                <a href="{% url 'test_razonamiento:test_delete' test.pk %}" class="btn btn-sm btn-outline-danger">
-                                    Borrar
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No has creado ningún test aún.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-journal-text me-2"></i>Mis Tests Configurados
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-card-heading me-1"></i>Nombre</th>
+                                <th><i class="bi bi-clock me-1"></i>Tiempo/Preg.</th>
+                                <th><i class="bi bi-question-circle me-1"></i>N° Preguntas</th>
+                                <th><i class="bi bi-toggle-on me-1"></i>Estado</th>
+                                <th><i class="bi bi-gear me-1"></i>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in tests %}
+                            <tr>
+                                <td><strong>{{ test.name }}</strong></td>
+                                <td><span class="badge badge-attempts">{{ test.seconds_per_question }}s</span></td>
+                                <td><span class="badge badge-attempts">{{ test.num_questions }}</span></td>
+                                <td>
+                                    {% if test.is_active %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a href="{% url 'test_razonamiento:test_update' test.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil me-1"></i>Configurar
+                                        </a>
+                                        <a href="{% url 'test_razonamiento:test_results_report' test.pk %}" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-bar-chart me-1"></i>Resultados
+                                        </a>
+                                        <a href="{% url 'test_razonamiento:test_delete' test.pk %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash me-1"></i>Borrar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox d-block mb-2" style="font-size: 2rem; opacity: 0.5;"></i>
+                                    No has creado ningún test aún.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -70,45 +87,49 @@
 
 <!-- Modal para Crear Test -->
 <div class="modal fade" id="createTestModal" tabindex="-1" aria-labelledby="createTestModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{% url 'test_razonamiento:test_create' %}" method="post">
                 {% csrf_token %}
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createTestModalLabel">Nuevo Test de Razonamiento</h5>
+                    <h5 class="modal-title" id="createTestModalLabel">
+                        <i class="bi bi-plus-circle me-2"></i>Nuevo Test de Razonamiento
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label">{{ form.name.label }}</label>
                         {{ form.name }}
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label">{{ form.description.label }}</label>
                         {{ form.description }}
                     </div>
-                    <div class="row mb-3">
-                        <div class="col">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
                             <label class="form-label">{{ form.seconds_per_question.label }}</label>
                             {{ form.seconds_per_question }}
                         </div>
-                        <div class="col">
+                        <div class="col-md-4">
                             <label class="form-label">{{ form.num_questions.label }}</label>
                             {{ form.num_questions }}
                         </div>
-                        <div class="col">
+                        <div class="col-md-4">
                             <label class="form-label">{{ form.max_attempts.label }}</label>
                             {{ form.max_attempts }}
                         </div>
                     </div>
-                    <div class="form-check">
+                    <div class="form-check form-switch">
                         {{ form.is_active }}
                         <label class="form-check-label">{{ form.is_active.label }}</label>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Test</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Guardar Test
+                    </button>
                 </div>
             </form>
         </div>

@@ -2,37 +2,57 @@
 {% block title %}Mi Historial de Tests{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Mi Historial de Resultados</h1>
-    <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-outline-primary">Ver Tests Disponibles</a>
-</div>
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title mb-0">
+            <i class="bi bi-clock-history me-2 text-primary"></i>Mi Historial
+        </h1>
+        <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>Ver Tests Disponibles
+        </a>
+    </div>
 
-<div class="row row-cols-1 row-cols-md-2 g-4">
-    {% for attempt in attempts %}
-    <div class="col">
-        <div class="card h-100 shadow-sm border-0 border-top border-4 {% if attempt.score_percentage >= 70 %}border-success{% elif attempt.score_percentage >= 40 %}border-warning{% else %}border-danger{% endif %}">
-            <div class="card-body">
+    <div class="row g-4">
+        {% for attempt in attempts %}
+        <div class="col-md-6">
+            <div class="history-card {% if attempt.score_percentage >= 70 %}excellent{% elif attempt.score_percentage >= 40 %}good{% else %}poor{% endif %}">
                 <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h5 class="card-title mb-0">{{ attempt.test.name }}</h5>
-                    <span class="badge {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                    <h5 class="card-title mb-0 fw-bold">{{ attempt.test.name }}</h5>
+                    <span class="score-badge {% if attempt.score_percentage >= 70 %}excellent{% elif attempt.score_percentage >= 40 %}good{% else %}poor{% endif %}">
                         {{ attempt.score_percentage|floatformat:0 }}%
                     </span>
                 </div>
                 
-                <p class="text-muted mb-1 small"><i class="bi bi-calendar-check"></i> Finalizado el {{ attempt.end_date|date:"d M Y, H:i" }}</p>
-                <p class="mb-3"><strong>Resultado:</strong> {{ attempt.score }} / {{ attempt.test.num_questions }} aciertos</p>
+                <p class="history-date mb-2">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    Finalizado el {{ attempt.end_date|date:"d M Y, H:i" }}
+                </p>
+                <p class="mb-4">
+                    <i class="bi bi-check2-circle me-1 text-success"></i>
+                    <strong>Resultado:</strong> {{ attempt.score }} / {{ attempt.test.num_questions }} aciertos
+                </p>
                 
                 <div class="d-grid">
-                    <a href="{% url 'test_razonamiento:test_results' attempt.id %}" class="btn btn-sm btn-outline-primary">Ver Detalle del Resultado</a>
+                    <a href="{% url 'test_razonamiento:test_results' attempt.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>Ver Detalle del Resultado
+                    </a>
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-clipboard-x"></i>
+                </div>
+                <h3>Aún no has completado ningún test</h3>
+                <p class="text-muted mb-4">¡Pon a prueba tus habilidades de razonamiento abstracto!</p>
+                <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-rocket me-2"></i>Comenzar un Test ahora
+                </a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-12 text-center py-5">
-        <p class="lead text-muted">Aún no has completado ningún test.</p>
-        <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-primary">Comenzar un Test ahora</a>
-    </div>
-    {% endfor %}
 </div>
 {% endblock %}

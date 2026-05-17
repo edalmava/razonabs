@@ -1,35 +1,68 @@
 {% extends 'test_razonamiento/base.html' %}
+{% block title %}Tests Disponibles{% endblock %}
+
 {% block content %}
-<h2>Tests Disponibles</h2>
-<div class="row mt-4">
-    {% for item in test_data %}
-    <div class="col-md-4">
-        <div class="card p-3 h-100 shadow-sm">
-            <div class="d-flex justify-content-between">
-                <h3>{{ item.test.name }}</h3>
-                {% if not item.can_start_new and not item.has_active_attempt %}
-                    <span class="badge bg-danger align-self-start">Límite alcanzado</span>
-                {% endif %}
-            </div>
-            <p class="text-muted small mb-2">{{ item.test.num_questions }} preguntas | {{ item.test.seconds_per_question }}s por preg.</p>
-
-            <div class="mb-3">
-                <span class="badge bg-light text-dark border">
-                    Intentos: {{ item.user_attempts_count }} / {{ item.test.max_attempts }}
-                </span>
-            </div>
-
-            {% if item.has_active_attempt %}
-                <a href="{% url 'test_razonamiento:test_start' item.test.id %}" class="btn btn-warning w-100">Continuar Test</a>
-            {% elif item.can_start_new %}
-                <a href="{% url 'test_razonamiento:test_start' item.test.id %}" class="btn btn-primary w-100">Comenzar</a>
-            {% else %}
-                <button class="btn btn-secondary w-100" disabled>No quedan intentos</button>
-            {% endif %}
-        </div>
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title mb-0">
+            <i class="bi bi-collection-play me-2 text-primary"></i>Tests Disponibles
+        </h1>
     </div>
-    {% empty %}
-    <p>No hay tests activos en este momento.</p>
-    {% endfor %}
+
+    <div class="row g-4">
+        {% for item in test_data %}
+        <div class="col-md-4">
+            <div class="test-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h3 class="test-title">{{ item.test.name }}</h3>
+                    {% if not item.can_start_new and not item.has_active_attempt %}
+                        <span class="badge bg-danger">Límite alcanzado</span>
+                    {% endif %}
+                </div>
+                
+                <p class="test-meta mb-3">
+                    <i class="bi bi-question-circle me-1"></i>
+                    {{ item.test.num_questions }} preguntas
+                    <span class="mx-2">|</span>
+                    <i class="bi bi-clock me-1"></i>
+                    {{ item.test.seconds_per_question }}s por pregunta
+                </p>
+
+                <div class="mb-4">
+                    <span class="badge badge-attempts">
+                        <i class="bi bi-arrow-repeat me-1"></i>
+                        Intentos: {{ item.user_attempts_count }} / {{ item.test.max_attempts }}
+                    </span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    {% if item.has_active_attempt %}
+                        <a href="{% url 'test_razonamiento:test_start' item.test.id %}" class="btn btn-warning btn-lg">
+                            <i class="bi bi-play-fill me-2"></i>Continuar Test
+                        </a>
+                    {% elif item.can_start_new %}
+                        <a href="{% url 'test_razonamiento:test_start' item.test.id %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-rocket me-2"></i>Comenzar
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="bi bi-x-circle me-2"></i>No quedan intentos
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3>No hay tests disponibles</h3>
+                <p class="text-muted">Pronto tendrás nuevos tests disponibles. ¡Vuelve más tarde!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
