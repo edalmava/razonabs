@@ -30,13 +30,14 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = [
-            'title', 'is_active', 'stimulus_image', 
-            'option_1_image', 'option_2_image', 'option_3_image', 
-            'option_4_image', 'option_5_image', 'option_6_image', 
+            'title', 'description', 'is_active', 'stimulus_image',
+            'option_1_image', 'option_2_image', 'option_3_image',
+            'option_4_image', 'option_5_image', 'option_6_image',
             'correct_option'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Descripción opcional que se mostrará antes de la imagen'}),
             'correct_option': forms.NumberInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

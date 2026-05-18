@@ -12,6 +12,12 @@
         <div class="exam-timer" id="timer">--:--</div>
     </div>
 
+    {% if question.description %}
+    <div class="alert alert-info mb-4">
+        {{ question.description }}
+    </div>
+    {% endif %}
+
     <div class="stimulus-container">
         <img src="{% url 'test_razonamiento:serve_question_image' attempt.id question.id 'stimulus' %}" 
              class="stimulus-img" 

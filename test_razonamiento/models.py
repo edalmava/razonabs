@@ -59,6 +59,7 @@ class CustomUser(AbstractUser, TimeStampedModel):
 
 class Question(TimeStampedModel):
     title = models.CharField(_("título interno"), max_length=200)
+    description = models.TextField(_("descripción"), blank=True, help_text=_("Texto que se mostrará antes de la imagen estímulo"))
     stimulus_image = models.ImageField(_("imagen estímulo"), upload_to=question_media_path)
     
     # 6 campos de opciones individuales opcionales

@@ -24,6 +24,11 @@
                     </div>
 
                     <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="mb-4">
                         <div class="form-check form-switch">
                             {{ form.is_active }}
                             <label class="form-check-label">{{ form.is_active.label }}</label>

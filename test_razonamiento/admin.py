@@ -17,7 +17,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ["title", "stimulus_preview", "correct_option", "is_active"]
     
     fieldsets = (
-        (_("General"), {"fields": ("title", "is_active")}),
+        (_("General"), {"fields": ("title", "description", "is_active")}),
         (_("Estímulo"), {"fields": ("stimulus_image", "correct_option")}),
         (_("Opciones de Respuesta"), {
             "fields": (
