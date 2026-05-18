@@ -176,6 +176,13 @@ class TestAttempt(TimeStampedModel):
         if total == 0: return 0
         return (self.score / total) * 100
 
+    @property
+    def nota(self):
+        total = self.test.num_questions
+        if total == 0: return 1
+        raw_nota = 1 + 4 * (self.score / total)
+        return max(1, min(5, raw_nota))
+
 class AttemptQuestion(models.Model):
     """Tabla intermedia para fijar la secuencia aleatoria."""
     attempt = models.ForeignKey(TestAttempt, on_delete=models.CASCADE, related_name="test_questions")

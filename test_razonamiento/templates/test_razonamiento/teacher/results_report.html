@@ -21,6 +21,7 @@
                     <th>Código Estudiante</th>
                     <th>Finalizado en</th>
                     <th class="text-center">Puntaje</th>
+                    <th class="text-center">Nota</th>
                     <th>Desempeño</th>
                     <th class="text-end pe-4">Acciones</th>
                 </tr>
@@ -34,6 +35,9 @@
                         <span class="badge {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
                             {{ attempt.score }} / {{ test.num_questions }}
                         </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="fw-bold fs-5">{{ attempt.nota|floatformat:1 }}</span>
                     </td>
                     <td style="min-width: 150px;">
                         <div class="d-flex align-items-center">
@@ -57,7 +61,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center py-5 text-muted">
+                    <td colspan="6" class="text-center py-5 text-muted">
                         <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
                         Nadie ha finalizado este test todavía.
                     </td>

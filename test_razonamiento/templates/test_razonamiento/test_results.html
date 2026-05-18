@@ -4,10 +4,11 @@
     <div class="col-md-6 text-center">
         <div class="card p-5">
             <h2 class="mb-4">Test Finalizado</h2>
-            <div class="display-1 text-primary mb-3">{{ score_pct|floatformat:0 }}%</div>
+            <div class="display-4 text-primary mb-2">{{ score_pct|floatformat:0 }}%</div>
+            <div class="display-3 fw-bold text-success mb-3">{{ nota|floatformat:1 }}</div>
             <p class="lead">Puntaje: {{ correct_count }} / {{ total }}</p>
             <hr>
-            <p>Has completado satisfactoriamente el test de razonamiento.</p>
+            <p class="text-muted">Nota calculada: 1 + 4 × (acertos / preguntas)</p>
             <a href="{% url 'test_razonamiento:test_list' %}" class="btn btn-outline-primary mt-3">Volver al inicio</a>
         </div>
     </div>

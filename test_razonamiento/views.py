@@ -189,7 +189,8 @@ def test_results(request, attempt_id):
         'attempt': attempt,
         'correct_count': attempt.score,
         'total': attempt.test.num_questions,
-        'score_pct': attempt.score_percentage
+        'score_pct': attempt.score_percentage,
+        'nota': attempt.nota
     })
 
 class StudentHistoryView(LoginRequiredMixin, ListView):
@@ -285,6 +286,7 @@ class AttemptDetailView(TeacherRequiredMixin, DetailView):
         context['correct_count'] = self.object.score
         context['total_questions'] = self.object.test.num_questions
         context['score_pct'] = self.object.score_percentage
+        context['nota'] = self.object.nota
         return context
 
 # CRUD Preguntas
