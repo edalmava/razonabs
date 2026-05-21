@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #333;
+            font-size: 10pt;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 18pt;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 12pt;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            border-bottom: 1px solid #eee;
+            padding: 8px;
+            vertical-align: middle;
+        }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 8pt;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            font-size: 9pt;
+        }
+        .bg-success { background-color: #28a745; }
+        .bg-warning { background-color: #ffc107; color: #333; }
+        .bg-danger { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">Reporte de Resultados</div>
+        <div class="subtitle">Test: {{ test.name }}</div>
+        <div style="font-size: 9pt; margin-top: 5px;">Fecha del reporte: {{ today|date:"d/m/Y H:i" }}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">Código</th>
+                <th width="35%">Estudiante</th>
+                <th width="15%" class="text-center">Puntaje</th>
+                <th width="10%" class="text-center">Nota</th>
+                <th width="25%">Fecha Fin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attempt in attempts %}
+            <tr>
+                <td class="fw-bold">{{ attempt.student.username }}</td>
+                <td>{{ attempt.student.get_full_name|default:attempt.student.username }}</td>
+                <td class="text-center">{{ attempt.score }} / {{ test.num_questions }}</td>
+                <td class="text-center fw-bold">{{ attempt.nota|floatformat:1 }}</td>
+                <td>{{ attempt.end_date|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generado automáticamente por el Sistema de Test de Razonamiento Abstracto
+    </div>
+</body>
+</html>

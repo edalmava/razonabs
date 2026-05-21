@@ -15,9 +15,9 @@ Sistema de evaluación basado en Django para la gestión y aplicación de tests 
 El núcleo del sistema reside en la aplicación `test_razonamiento`:
 
 - **Usuarios (`CustomUser`):** Soporta roles de **Estudiante** (Student) y **Docente** (Teacher).
-- **Banco de Preguntas (`Question` & `AnswerOption`):** Cada pregunta consiste en una imagen de estímulo y exactamente 6 opciones de respuesta (también imágenes).
-- **Tests (`Test`):** Configuración de sesiones de evaluación (nombre, duración en minutos, cantidad de preguntas a seleccionar aleatoriamente).
-- **Intentos (`Attempt` & `AttemptAnswer`):** Registro detallado de la participación del estudiante, incluyendo un snapshot de las preguntas asignadas, tiempo restante y cálculo automático de puntaje.
+- **Banco de Preguntas (`Question`):** Cada pregunta consiste en una imagen de estímulo, una descripción opcional y exactamente 6 opciones de respuesta (también imágenes integradas en el modelo).
+- **Tests (`Test`):** Configuración de sesiones de evaluación (nombre, duración, cantidad de preguntas, máximo de intentos).
+- **Intentos (`TestAttempt`, `AttemptQuestion` & `StudentResponse`):** Registro detallado de la participación, incluyendo secuencia aleatoria, marcas de tiempo por pregunta y validación de respuestas.
 
 ## 🛠️ Comandos de Desarrollo
 

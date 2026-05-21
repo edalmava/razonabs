@@ -10,11 +10,17 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.db import models
 from django.urls import reverse_lazy
-from django.http import FileResponse, HttpResponseForbidden, Http404
+from django.http import FileResponse, HttpResponseForbidden, Http404, HttpResponse
 from .models import Test, TestAttempt, Question, AttemptQuestion, StudentResponse, CustomUser
 from .forms import TestForm, CustomLoginForm, QuestionForm, StudentImportForm, StudentForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
+from django.template.loader import render_to_string
+
+# Librerías para exportación
+import openpyxl
+from openpyxl.styles import Font, Alignment
+from xhtml2pdf import pisa
 
 # --- Utilidades ---
 
@@ -454,3 +460,86 @@ class StudentDeleteView(TeacherRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Estudiante eliminado correctamente.")
         return super().delete(request, *args, **kwargs)
+
+# --- Funciones de Exportación ---
+
+@login_required
+def export_test_results_excel(request, pk):
+    """Genera un archivo Excel con los resultados de un test."""
+    if not (request.user.role == 'teacher' or request.user.is_superuser):
+        return HttpResponseForbidden("No tienes permiso para esta acción.")
+    
+    test = get_object_or_404(Test, pk=pk)
+    attempts = test.attempts.filter(status='finished').select_related('student').order_by('-end_date')
+    
+    # Crear libro de trabajo
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Resultados del Test"
+    
+    # Encabezados
+    headers = ['Código', 'Nombre', 'Apellido', 'Puntaje', 'Porcentaje (%)', 'Nota', 'Fecha Finalización']
+    ws.append(headers)
+    
+    # Estilo para encabezados
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+    
+    # Datos
+    for attempt in attempts:
+        ws.append([
+            attempt.student.username,
+            attempt.student.first_name,
+            attempt.student.last_name,
+            f"{attempt.score} / {test.num_questions}",
+            round(attempt.score_percentage, 1),
+            round(attempt.nota, 2),
+            attempt.end_date.strftime("%d/%m/%Y %H:%M")
+        ])
+    
+    # Ajustar ancho de columnas
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        ws.column_dimensions[column_letter].width = max_length + 2
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="resultados_{test.name.replace(" ", "_")}.xlsx"'
+    wb.save(response)
+    return response
+
+@login_required
+def export_test_results_pdf(request, pk):
+    """Genera un reporte PDF con los resultados de un test."""
+    if not (request.user.role == 'teacher' or request.user.is_superuser):
+        return HttpResponseForbidden("No tienes permiso para esta acción.")
+    
+    test = get_object_or_404(Test, pk=pk)
+    attempts = test.attempts.filter(status='finished').select_related('student').order_by('-end_date')
+    
+    context = {
+        'test': test,
+        'attempts': attempts,
+        'today': timezone.now(),
+    }
+    
+    # Renderizar template
+    html = render_to_string('test_razonamiento/teacher/results_pdf.html', context)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_{test.name.replace(" ", "_")}.pdf"'
+    
+    # Crear PDF
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    
+    if pisa_status.err:
+        return HttpResponse('Ocurrió un error al generar el PDF.', status=500)
+    
+    return response

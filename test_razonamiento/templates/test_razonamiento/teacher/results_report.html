@@ -12,7 +12,17 @@
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
         <h5 class="mb-0">Estudiantes que completaron el test: <strong>{{ test.name }}</strong></h5>
-        <span class="badge bg-primary fs-6">{{ attempts.count }} intentos finalizados</span>
+        <div class="d-flex align-items-center">
+            <div class="btn-group me-3">
+                <a href="{% url 'test_razonamiento:export_results_excel' test.pk %}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Excel
+                </a>
+                <a href="{% url 'test_razonamiento:export_results_pdf' test.pk %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                </a>
+            </div>
+            <span class="badge bg-primary fs-6">{{ attempts.count }} intentos</span>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">

@@ -23,6 +23,8 @@ urlpatterns = [
     path('teacher/test/<int:pk>/edit/', views.TestUpdateView.as_view(), name='test_update'),
     path('teacher/test/<int:pk>/delete/', views.TestDeleteView.as_view(), name='test_delete'),
     path('teacher/test/<int:pk>/results/', views.TestResultsReportView.as_view(), name='test_results_report'),
+    path('teacher/test/<int:pk>/export/excel/', views.export_test_results_excel, name='export_results_excel'),
+    path('teacher/test/<int:pk>/export/pdf/', views.export_test_results_pdf, name='export_results_pdf'),
     path('teacher/attempt/<int:pk>/details/', views.AttemptDetailView.as_view(), name='attempt_details'),
     path('teacher/attempt/<int:pk>/delete/', views.TestAttemptDeleteView.as_view(), name='attempt_delete'),
     
