@@ -59,7 +59,24 @@
     let timeLeft = {{ seconds }};
     const timerElement = document.getElementById('timer');
     const form = document.getElementById('test-form');
+    const submitButton = form.querySelector('button[type="submit"]');
     const maxTime = {{ seconds }};
+    let isSubmitting = false;
+
+    function disableSubmitButton() {
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Enviando...';
+        }
+    }
+
+    function submitForm() {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        clearInterval(timerInterval);
+        disableSubmitButton();
+        form.submit();
+    }
 
     function updateTimer() {
         let mins = Math.floor(timeLeft / 60);
@@ -74,14 +91,24 @@
         }
 
         if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            form.submit();
+            submitForm();
         }
         timeLeft--;
     }
 
     const timerInterval = setInterval(updateTimer, 1000);
     updateTimer();
+
+    // Capturar y manejar el envío manual para evitar doble submit
+    form.addEventListener('submit', function(e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            return;
+        }
+        isSubmitting = true;
+        clearInterval(timerInterval);
+        disableSubmitButton();
+    });
 
     function selectOption(val) {
         document.querySelectorAll('.option-card').forEach(el => el.classList.remove('selected'));

@@ -110,7 +110,10 @@ def test_start(request, test_id):
 
 @login_required
 def render_question(request, attempt_id):
-    attempt = get_object_or_404(TestAttempt, id=attempt_id, student=request.user, status=TestAttempt.Status.IN_PROGRESS)
+    attempt = get_object_or_404(TestAttempt, id=attempt_id, student=request.user)
+    if attempt.status == TestAttempt.Status.FINISHED:
+        return redirect('test_razonamiento:test_results', attempt_id=attempt.id)
+
     attempt_questions = attempt.test_questions.all().select_related('question')
     responded_question_ids = StudentResponse.objects.filter(attempt=attempt).values_list('question_id', flat=True)
     current_attempt_question = attempt_questions.exclude(question_id__in=responded_question_ids).first()
