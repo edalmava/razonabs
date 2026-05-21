@@ -1,5 +1,18 @@
 {% extends 'test_razonamiento/base.html' %}
-{% block title %}Editar Test: {{ object.name }}{% endblock %}
+{% block title %}{% if object %}Editar Test: {{ object.name }}{% else %}Crear Test{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <div class="breadcrumb-container">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:teacher_dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active" aria-current="page">
+        {% if object %}Editar Test: {{ object.name }}{% else %}Crear Test{% endif %}
+      </li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">

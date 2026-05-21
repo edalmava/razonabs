@@ -1,5 +1,19 @@
 {% extends 'test_razonamiento/base.html' %}
-{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Estudiante{% endblock %}
+{% block title %}{% if object %}Editar Estudiante: {{ object.username }}{% else %}Registrar Estudiante{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <div class="breadcrumb-container">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:teacher_dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:student_list' %}">Gestión de Estudiantes</a></li>
+      <li class="breadcrumb-item active" aria-current="page">
+        {% if object %}Editar Estudiante: {{ object.username }}{% else %}Registrar Estudiante{% endif %}
+      </li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">

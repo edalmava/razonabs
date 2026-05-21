@@ -1,6 +1,17 @@
 {% extends 'test_razonamiento/base.html' %}
 {% block title %}Banco de Preguntas{% endblock %}
 
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <div class="breadcrumb-container">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:teacher_dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Banco de Preguntas</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Banco de Preguntas</h1>

@@ -2,14 +2,19 @@
 {% load custom_filters %}
 {% block title %}Detalle del Intento: {{ attempt.student.username }}{% endblock %}
 
-{% block content %}
+{% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mb-4">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:teacher_dashboard' %}">Dashboard</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:test_results_report' attempt.test.pk %}">Resultados: {{ attempt.test.name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Detalle: {{ attempt.student.username }}</li>
-  </ol>
+  <div class="breadcrumb-container">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:teacher_dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'test_razonamiento:test_results_report' attempt.test.pk %}">Resultados: {{ attempt.test.name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Detalle: {{ attempt.student.username }}</li>
+    </ol>
+  </div>
 </nav>
+{% endblock %}
+
+{% block content %}
 
 <div class="row mb-4">
     <div class="col-md-4">
