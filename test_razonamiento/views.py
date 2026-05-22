@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, FormView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, FormView, View
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.db import models
 from django.urls import reverse_lazy
@@ -546,3 +546,36 @@ def export_test_results_pdf(request, pk):
         return HttpResponse('Ocurrió un error al generar el PDF.', status=500)
     
     return response
+
+
+# --- Acciones por Lotes ---
+
+class BatchDeleteAttemptsView(TeacherRequiredMixin, View):
+    """Elimina de forma masiva los intentos seleccionados de un test."""
+
+    def post(self, request, *args, **kwargs):
+        test_id = self.kwargs.get('pk')
+        attempt_ids = request.POST.getlist('attempt_ids')
+        action = request.POST.get('action')
+
+        if not attempt_ids:
+            messages.warning(request, "No se seleccionó ningún intento.")
+            return redirect('test_razonamiento:test_results_report', pk=test_id)
+
+        if action == 'delete':
+            # Filtramos por test_id para garantizar que el docente
+            # solo borre intentos que pertenezcan a este test.
+            qs = TestAttempt.objects.filter(
+                id__in=attempt_ids,
+                test_id=test_id,
+                status='finished',
+            )
+            deleted_count, _ = qs.delete()
+            messages.success(
+                request,
+                f"Se han eliminado {deleted_count} intento(s) correctamente.",
+            )
+        else:
+            messages.error(request, "Acción no reconocida.")
+
+        return redirect('test_razonamiento:test_results_report', pk=test_id)

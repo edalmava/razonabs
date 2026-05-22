@@ -27,6 +27,8 @@ urlpatterns = [
     path('teacher/test/<int:pk>/export/pdf/', views.export_test_results_pdf, name='export_results_pdf'),
     path('teacher/attempt/<int:pk>/details/', views.AttemptDetailView.as_view(), name='attempt_details'),
     path('teacher/attempt/<int:pk>/delete/', views.TestAttemptDeleteView.as_view(), name='attempt_delete'),
+    path('teacher/test/<int:pk>/attempts/batch-delete/', views.BatchDeleteAttemptsView.as_view(), name='batch_delete_attempts'),
+
     
     # CRUD Preguntas
     path('teacher/questions/', views.QuestionListView.as_view(), name='question_list'),

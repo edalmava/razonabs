@@ -122,3 +122,144 @@ class TestUnansweredQuestion(TestCase):
         response = self.client.post(reverse('test_razonamiento:render_question', args=[attempt.id]), {'option': '1'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('test_razonamiento:test_results', args=[attempt.id]))
+
+
+# ---------------------------------------------------------------------------
+# Pruebas para BatchDeleteAttemptsView
+# ---------------------------------------------------------------------------
+
+class TestBatchDeleteAttempts(TestCase):
+    """Verifica el comportamiento del borrado masivo de intentos."""
+
+    def setUp(self):
+        # Docente
+        self.teacher = CustomUser.objects.create_user(
+            username='teacher_batch',
+            password='pass123',
+            role=CustomUser.Role.TEACHER,
+        )
+        # Estudiante
+        self.student = CustomUser.objects.create_user(
+            username='student_batch',
+            password='pass123',
+            role=CustomUser.Role.STUDENT,
+        )
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00'
+            b'\x01\x00\x01\x00\x00\x02\x02\x4c\x01\x00\x3b'
+        )
+        stimulus = SimpleUploadedFile('s.gif', small_gif, content_type='image/gif')
+        question = Question.objects.create(
+            title='Q1', stimulus_image=stimulus,
+            correct_option=1, is_active=True,
+        )
+
+        # Test A (el que usaremos para borrado)
+        self.test_a = Test.objects.create(
+            name='Test A', seconds_per_question=60,
+            num_questions=1, max_attempts=5,
+            is_active=True, created_by=self.teacher,
+        )
+        self.test_a.questions.add(question)
+
+        # Test B (para verificar que no borra intentos de otros tests)
+        self.test_b = Test.objects.create(
+            name='Test B', seconds_per_question=60,
+            num_questions=1, max_attempts=5,
+            is_active=True, created_by=self.teacher,
+        )
+        self.test_b.questions.add(question)
+
+        # Crear 3 intentos finalizados en test_a y 1 en test_b
+        self.attempt1 = TestAttempt.objects.create(
+            student=self.student, test=self.test_a,
+            status='finished', end_date=timezone.now(),
+        )
+        self.attempt2 = TestAttempt.objects.create(
+            student=self.student, test=self.test_a,
+            status='finished', end_date=timezone.now(),
+        )
+        self.attempt3 = TestAttempt.objects.create(
+            student=self.student, test=self.test_a,
+            status='finished', end_date=timezone.now(),
+        )
+        self.attempt_b = TestAttempt.objects.create(
+            student=self.student, test=self.test_b,
+            status='finished', end_date=timezone.now(),
+        )
+
+        self.url = reverse(
+            'test_razonamiento:batch_delete_attempts',
+            kwargs={'pk': self.test_a.pk},
+        )
+        self.client = Client()
+
+    # ── 1. Borrado exitoso de varios intentos ─────────────────────────────
+    def test_batch_delete_selected_attempts(self):
+        self.client.login(username='teacher_batch', password='pass123')
+        response = self.client.post(self.url, {
+            'action': 'delete',
+            'attempt_ids': [self.attempt1.pk, self.attempt2.pk],
+        })
+        self.assertRedirects(
+            response,
+            reverse('test_razonamiento:test_results_report', kwargs={'pk': self.test_a.pk}),
+        )
+        # Los dos intentos seleccionados ya no existen
+        self.assertFalse(TestAttempt.objects.filter(pk=self.attempt1.pk).exists())
+        self.assertFalse(TestAttempt.objects.filter(pk=self.attempt2.pk).exists())
+        # El tercero del mismo test sigue intacto
+        self.assertTrue(TestAttempt.objects.filter(pk=self.attempt3.pk).exists())
+
+    # ── 2. Sin selección muestra advertencia y redirige ───────────────────
+    def test_batch_delete_no_selection_shows_warning(self):
+        self.client.login(username='teacher_batch', password='pass123')
+        response = self.client.post(self.url, {'action': 'delete'})
+        self.assertRedirects(
+            response,
+            reverse('test_razonamiento:test_results_report', kwargs={'pk': self.test_a.pk}),
+        )
+        # Ningún intento fue borrado
+        self.assertEqual(
+            TestAttempt.objects.filter(test=self.test_a).count(), 3
+        )
+
+    # ── 3. Estudiante no puede acceder (redirige a login) ─────────────────
+    def test_student_cannot_batch_delete(self):
+        self.client.login(username='student_batch', password='pass123')
+        response = self.client.post(self.url, {
+            'action': 'delete',
+            'attempt_ids': [self.attempt1.pk],
+        })
+        # Debe denegar el acceso (redirección o 403)
+        self.assertIn(response.status_code, [302, 403])
+        # El intento no fue borrado
+        self.assertTrue(TestAttempt.objects.filter(pk=self.attempt1.pk).exists())
+
+    # ── 4. Usuario anónimo es redirigido ──────────────────────────────────
+    def test_anonymous_cannot_batch_delete(self):
+        response = self.client.post(self.url, {
+            'action': 'delete',
+            'attempt_ids': [self.attempt1.pk],
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/', response.url)
+
+    # ── 5. No borra intentos de otro test (seguridad cross-test) ─────────
+    def test_cannot_delete_attempt_from_other_test(self):
+        self.client.login(username='teacher_batch', password='pass123')
+        # Intentamos borrar attempt_b (que pertenece a test_b) desde la URL de test_a
+        response = self.client.post(self.url, {
+            'action': 'delete',
+            'attempt_ids': [self.attempt_b.pk],
+        })
+        self.assertRedirects(
+            response,
+            reverse('test_razonamiento:test_results_report', kwargs={'pk': self.test_a.pk}),
+        )
+        # attempt_b debe seguir existiendo
+        self.assertTrue(TestAttempt.objects.filter(pk=self.attempt_b.pk).exists())
+

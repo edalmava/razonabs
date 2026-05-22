@@ -14,76 +14,301 @@
 
 {% block content %}
 
-<div class="card shadow-sm">
+<style>
+  /* Checkbox personalizado */
+  .form-check-input-custom {
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+    accent-color: var(--primary);
+    border-radius: 4px;
+  }
+
+  /* Fila seleccionada */
+  tr.row-selected {
+    background-color: var(--primary-light) !important;
+    transition: background-color 0.2s ease;
+  }
+
+  /* Barra de acciones por lotes */
+  #batch-action-bar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 0.85rem 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-lg);
+    animation: slideDown 0.25s ease-out;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  #batch-action-bar.visible {
+    display: flex;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  #batch-count-badge {
+    background: rgba(255,255,255,0.25);
+    border-radius: 50px;
+    padding: 0.25rem 0.75rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  #batch-action-bar .btn-batch-delete {
+    background: rgba(239,68,68,0.85);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: var(--border-radius-sm);
+    padding: 0.4rem 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  #batch-action-bar .btn-batch-delete:hover {
+    background: var(--danger);
+    border-color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+  }
+
+  #batch-action-bar .btn-batch-cancel {
+    background: transparent;
+    color: rgba(255,255,255,0.85);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: var(--border-radius-sm);
+    padding: 0.4rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  #batch-action-bar .btn-batch-cancel:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.6);
+    color: white;
+  }
+
+  /* Columna checkbox */
+  .col-check {
+    width: 48px;
+    text-align: center;
+  }
+</style>
+
+{# ── Formulario envuelve toda la tabla ── #}
+<form id="batch-form" method="post" action="{% url 'test_razonamiento:batch_delete_attempts' test.pk %}">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="delete">
+
+  {# ── Barra de acciones por lotes ── #}
+  <div id="batch-action-bar" role="alert" aria-live="polite">
+    <i class="bi bi-check2-square fs-5"></i>
+    <span id="batch-count-badge">0 seleccionados</span>
+    <span class="flex-grow-1 d-none d-sm-block" style="font-size:0.875rem; opacity:0.9;">
+      intentos marcados
+    </span>
+    <button type="button" class="btn-batch-cancel" id="btn-deselect-all">
+      <i class="bi bi-x me-1"></i>Cancelar selección
+    </button>
+    <button type="submit" class="btn-batch-delete" id="btn-batch-delete">
+      <i class="bi bi-trash3 me-1"></i>Eliminar seleccionados
+    </button>
+  </div>
+
+  {# ── Card principal ── #}
+  <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0">Estudiantes que completaron el test: <strong>{{ test.name }}</strong></h5>
-        <div class="d-flex align-items-center">
-            <div class="btn-group me-3">
-                <a href="{% url 'test_razonamiento:export_results_excel' test.pk %}" class="btn btn-sm btn-outline-success">
-                    <i class="bi bi-file-earmark-excel me-1"></i> Excel
-                </a>
-                <a href="{% url 'test_razonamiento:export_results_pdf' test.pk %}" class="btn btn-sm btn-outline-danger">
-                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF
-                </a>
-            </div>
-            <span class="badge bg-primary fs-6">{{ attempts.count }} intentos</span>
+      <h5 class="mb-0">Estudiantes que completaron el test: <strong>{{ test.name }}</strong></h5>
+      <div class="d-flex align-items-center">
+        <div class="btn-group me-3">
+          <a href="{% url 'test_razonamiento:export_results_excel' test.pk %}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+          </a>
+          <a href="{% url 'test_razonamiento:export_results_pdf' test.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+          </a>
         </div>
+        <span class="badge bg-primary fs-6">{{ attempts.count }} intentos</span>
+      </div>
     </div>
+
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Código Estudiante</th>
-                    <th>Finalizado en</th>
-                    <th class="text-center">Puntaje</th>
-                    <th class="text-center">Nota</th>
-                    <th>Desempeño</th>
-                    <th class="text-end pe-4">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for attempt in attempts %}
-                <tr>
-                    <td><span class="fw-bold">{{ attempt.student.username }}</span></td>
-                    <td>{{ attempt.end_date|date:"d/m/Y H:i" }}</td>
-                    <td class="text-center">
-                        <span class="badge {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
-                            {{ attempt.score }} / {{ test.num_questions }}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <span class="fw-bold fs-5">{{ attempt.nota|floatformat:1 }}</span>
-                    </td>
-                    <td style="min-width: 150px;">
-                        <div class="d-flex align-items-center">
-                            <div class="progress flex-grow-1" style="height: 10px;">
-                                <div class="progress-bar {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                     role="progressbar" style="width: {{ attempt.score_percentage }}%;" 
-                                     aria-valuenow="{{ attempt.score_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                                </div>
-                            </div>
-                            <span class="ms-2 fw-bold">{{ attempt.score_percentage|floatformat:0 }}%</span>
-                        </div>
-                    </td>
-                    <td class="text-end pe-4">
-                        <a href="{% url 'test_razonamiento:attempt_details' attempt.pk %}" class="btn btn-sm btn-primary">
-                            Ver Desglose
-                        </a>
-                        <a href="{% url 'test_razonamiento:attempt_delete' attempt.pk %}" class="btn btn-sm btn-outline-danger ms-1">
-                            Borrar
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
-                        <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
-                        Nadie ha finalizado este test todavía.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+      <table class="table table-hover align-middle mb-0" id="results-table">
+        <thead class="table-light">
+          <tr>
+            <th class="col-check">
+              {# Checkbox "Seleccionar todo" #}
+              <input
+                class="form-check-input form-check-input-custom"
+                type="checkbox"
+                id="chk-select-all"
+                title="Seleccionar / Deseleccionar todos"
+                {% if not attempts %}disabled{% endif %}
+              >
+            </th>
+            <th>Código Estudiante</th>
+            <th>Finalizado en</th>
+            <th class="text-center">Puntaje</th>
+            <th class="text-center">Nota</th>
+            <th>Desempeño</th>
+            <th class="text-end pe-4">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attempt in attempts %}
+          <tr id="row-{{ attempt.pk }}">
+            <td class="col-check">
+              <input
+                class="form-check-input form-check-input-custom chk-attempt"
+                type="checkbox"
+                name="attempt_ids"
+                value="{{ attempt.pk }}"
+                id="chk-{{ attempt.pk }}"
+                aria-label="Seleccionar intento de {{ attempt.student.username }}"
+              >
+            </td>
+            <td><span class="fw-bold">{{ attempt.student.username }}</span></td>
+            <td>{{ attempt.end_date|date:"d/m/Y H:i" }}</td>
+            <td class="text-center">
+              <span class="badge {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                {{ attempt.score }} / {{ test.num_questions }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="fw-bold fs-5">{{ attempt.nota|floatformat:1 }}</span>
+            </td>
+            <td style="min-width: 150px;">
+              <div class="d-flex align-items-center">
+                <div class="progress flex-grow-1" style="height: 10px;">
+                  <div class="progress-bar {% if attempt.score_percentage >= 70 %}bg-success{% elif attempt.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                       role="progressbar"
+                       style="width: {{ attempt.score_percentage }}%;"
+                       aria-valuenow="{{ attempt.score_percentage }}"
+                       aria-valuemin="0"
+                       aria-valuemax="100">
+                  </div>
+                </div>
+                <span class="ms-2 fw-bold">{{ attempt.score_percentage|floatformat:0 }}%</span>
+              </div>
+            </td>
+            <td class="text-end pe-4">
+              <a href="{% url 'test_razonamiento:attempt_details' attempt.pk %}" class="btn btn-sm btn-primary">
+                Ver Desglose
+              </a>
+              <a href="{% url 'test_razonamiento:attempt_delete' attempt.pk %}" class="btn btn-sm btn-outline-danger ms-1">
+                Borrar
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
+              Nadie ha finalizado este test todavía.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</div>
+  </div>{# /card #}
+</form>
+
+<script>
+(function () {
+  'use strict';
+
+  const chkAll      = document.getElementById('chk-select-all');
+  const chkItems    = document.querySelectorAll('.chk-attempt');
+  const actionBar   = document.getElementById('batch-action-bar');
+  const countBadge  = document.getElementById('batch-count-badge');
+  const btnDeselect = document.getElementById('btn-deselect-all');
+  const batchForm   = document.getElementById('batch-form');
+  const btnDelete   = document.getElementById('btn-batch-delete');
+
+  // ── Actualizar contador y visibilidad de la barra ──────────────────────
+  function updateBar() {
+    const checked = document.querySelectorAll('.chk-attempt:checked');
+    const n = checked.length;
+
+    if (n > 0) {
+      countBadge.textContent = n + (n === 1 ? ' seleccionado' : ' seleccionados');
+      actionBar.classList.add('visible');
+    } else {
+      actionBar.classList.remove('visible');
+    }
+
+    // Sincronizar estado del checkbox maestro
+    chkAll.indeterminate = n > 0 && n < chkItems.length;
+    chkAll.checked = n === chkItems.length && chkItems.length > 0;
+  }
+
+  // ── Resaltar fila al seleccionar ────────────────────────────────────────
+  function toggleRowHighlight(chk) {
+    const row = document.getElementById('row-' + chk.value);
+    if (row) {
+      row.classList.toggle('row-selected', chk.checked);
+    }
+  }
+
+  // ── Checkbox "Seleccionar todo" ─────────────────────────────────────────
+  chkAll.addEventListener('change', function () {
+    chkItems.forEach(function (chk) {
+      chk.checked = chkAll.checked;
+      toggleRowHighlight(chk);
+    });
+    updateBar();
+  });
+
+  // ── Checkboxes individuales ─────────────────────────────────────────────
+  chkItems.forEach(function (chk) {
+    chk.addEventListener('change', function () {
+      toggleRowHighlight(chk);
+      updateBar();
+    });
+  });
+
+  // ── Botón "Cancelar selección" ──────────────────────────────────────────
+  btnDeselect.addEventListener('click', function () {
+    chkAll.checked = false;
+    chkItems.forEach(function (chk) {
+      chk.checked = false;
+      toggleRowHighlight(chk);
+    });
+    updateBar();
+  });
+
+  // ── Confirmación antes de borrar ────────────────────────────────────────
+  batchForm.addEventListener('submit', function (e) {
+    const checked = document.querySelectorAll('.chk-attempt:checked');
+    if (checked.length === 0) {
+      e.preventDefault();
+      return;
+    }
+    const n = checked.length;
+    const msg = '¿Estás seguro de que deseas eliminar ' + n +
+                (n === 1 ? ' intento?' : ' intentos?') +
+                '\n\nEsta acción no se puede deshacer.';
+    if (!confirm(msg)) {
+      e.preventDefault();
+    }
+  });
+})();
+</script>
+
 {% endblock %}
