@@ -189,7 +189,9 @@ def serve_question_image(request, attempt_id, question_id, image_type):
     if not os.path.exists(file_path):
         raise Http404("Archivo no encontrado.")
 
-    return FileResponse(open(file_path, 'rb'), content_type='image/jpeg')
+    import mimetypes
+    content_type, _ = mimetypes.guess_type(file_path)
+    return FileResponse(open(file_path, 'rb'), content_type=content_type or 'image/jpeg')
 
 @login_required
 def test_results(request, attempt_id):
@@ -304,6 +306,7 @@ class QuestionListView(TeacherRequiredMixin, ListView):
     template_name = 'test_razonamiento/teacher/question_list.html'
     context_object_name = 'questions'
     ordering = ['-created_at']
+    paginate_by = 10
 
 class QuestionCreateView(TeacherRequiredMixin, CreateView):
     model = Question
